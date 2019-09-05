@@ -1,5 +1,6 @@
 import { InputType, Field } from 'type-graphql';
 import { User } from '~/entity/User';
+import { IsEmail } from 'class-validator';
 
 @InputType()
 export class CreateUserInput implements Partial<User> {
@@ -10,6 +11,7 @@ export class CreateUserInput implements Partial<User> {
   username: string;
 
   @Field()
+  @IsEmail()
   email: string;
 
   @Field({ nullable: true })

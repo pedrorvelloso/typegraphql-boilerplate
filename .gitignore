@@ -5,5 +5,8 @@ build/
 tmp/
 temp/
 
+# dist folder
+dist/
+
 # env file
 .env

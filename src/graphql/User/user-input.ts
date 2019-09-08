@@ -20,3 +20,12 @@ export class CreateUserInput implements Partial<User> {
   @Field({ nullable: true })
   lastName?: string;
 }
+
+@InputType()
+export class LoginInput {
+  @Field()
+  email: string;
+
+  @Field()
+  password: string;
+}

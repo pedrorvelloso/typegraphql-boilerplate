@@ -7,6 +7,8 @@ import { createConnection } from 'typeorm';
 import { buildSchema } from 'type-graphql';
 import { Container, Service } from 'typedi';
 
+import jwt from 'express-jwt';
+
 import Env from './config/Env';
 
 @Service()
@@ -17,20 +19,39 @@ class App {
 
   constructor() {
     this.app = express();
+    this.middlewares();
     this.apolloServer();
 
     this.configService = Container.get(Env);
     this.server = new http.Server(this.app);
   }
 
+  private middlewares() {
+    this.app.use(
+      '/graphql',
+      jwt({
+        secret: 'Graphql',
+        credentialsRequired: false,
+      }),
+    );
+  }
+
   private async apolloServer(): Promise<ApolloServer> {
     const schema = await buildSchema({
-      resolvers: [path.resolve(__dirname, 'graphql', '**', '*-resolver.{js,ts}')],
+      resolvers: [
+        path.resolve(__dirname, 'graphql', '**', '*-resolver.{js,ts}'),
+      ],
       container: Container,
     });
 
     const apollo = new ApolloServer({
       schema,
+      context: ({ req }: any) => {
+        const ctx: any = {
+          ...req.user,
+        };
+        return ctx;
+      },
       playground: true,
     });
 

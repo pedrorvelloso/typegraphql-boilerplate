@@ -7,7 +7,15 @@ export interface EnvConfig {
   [key: string]: any;
 }
 
-type EnvGet = 'NODE_ENV' | 'PORT' | 'DB_HOST' | 'DB_PORT' | 'DB_USERNAME' | 'DB_PASSWORD' | 'DB_DATABASE';
+type EnvGet =
+  | 'NODE_ENV'
+  | 'PORT'
+  | 'DB_HOST'
+  | 'DB_PORT'
+  | 'DB_USERNAME'
+  | 'DB_PASSWORD'
+  | 'DB_DATABASE'
+  | 'JWT_SECRET';
 
 @Service()
 class EnvService {
@@ -33,6 +41,7 @@ class EnvService {
       DB_USERNAME: Joi.string().required(),
       DB_PASSWORD: Joi.string().required(),
       DB_DATABASE: Joi.string().required(),
+      JWT_SECRET: Joi.string().required(),
     });
 
     const { error, value: validatedEnvConfig } = Joi.validate(

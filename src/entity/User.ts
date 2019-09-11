@@ -12,7 +12,7 @@ import { ObjectType, Field, ID } from 'type-graphql';
 import bcryptjs from 'bcryptjs';
 
 @ObjectType('UserNode')
-@Entity()
+@Entity({ name: 'users' })
 export class User {
   @Field(type => ID)
   @PrimaryGeneratedColumn('uuid')

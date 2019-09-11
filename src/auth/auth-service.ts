@@ -5,12 +5,14 @@ import { InjectRepository } from 'typeorm-typedi-extensions';
 import { User } from '~/entity/User';
 import { Repository } from 'typeorm';
 import { GraphQLError } from 'graphql';
-import { LoginPayload } from './auth-interface';
+import { LoginPayload } from './auth-payload';
+import Env from '~/config/Env';
 
 @Service()
 export default class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly configService: Env,
   ) {}
   public async authenticate(
     email: string,
@@ -22,11 +24,11 @@ export default class AuthService {
 
       if (!isCorrectPassword) throw new Error();
 
-      const token = jwt.sign({ user: { id: user.id } }, 'Graphql', {
+      const accessToken = jwt.sign({ user: { id: user.id } }, this.configService.get('JWT_SECRET'), {
         expiresIn: '2y',
       });
 
-      return { user, token };
+      return { user, accessToken };
     } catch {
       throw new GraphQLError('Failed to login');
     }

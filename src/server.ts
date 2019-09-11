@@ -10,6 +10,8 @@ import { Container, Service } from 'typedi';
 import jwt from 'express-jwt';
 
 import Env from './config/Env';
+import { AuthContext } from './auth/auth-context';
+import { customAuthChecker } from './auth/auth-checker';
 
 @Service()
 class App {
@@ -19,10 +21,11 @@ class App {
 
   constructor() {
     this.app = express();
+    this.configService = Container.get(Env);
+
     this.middlewares();
     this.apolloServer();
 
-    this.configService = Container.get(Env);
     this.server = new http.Server(this.app);
   }
 
@@ -30,10 +33,15 @@ class App {
     this.app.use(
       '/graphql',
       jwt({
-        secret: 'Graphql',
+        secret: this.configService.get('JWT_SECRET'),
         credentialsRequired: false,
       }),
     );
+    // @ts-ignore
+    this.app.use((err, req, res, next) => {
+      req.user = null;
+      return next();
+    });
   }
 
   private async apolloServer(): Promise<ApolloServer> {
@@ -41,13 +49,14 @@ class App {
       resolvers: [
         path.resolve(__dirname, 'graphql', '**', '*-resolver.{js,ts}'),
       ],
+      authChecker: customAuthChecker,
       container: Container,
     });
 
     const apollo = new ApolloServer({
       schema,
       context: ({ req }: any) => {
-        const ctx: any = {
+        const ctx: AuthContext = {
           ...req.user,
         };
         return ctx;

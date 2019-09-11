@@ -4,7 +4,7 @@ import { Field, ObjectType } from 'type-graphql';
 @ObjectType()
 export class LoginPayload {
   @Field()
-  token: string;
+  accessToken: string;
   @Field({ nullable: true })
   user?: User;
 }

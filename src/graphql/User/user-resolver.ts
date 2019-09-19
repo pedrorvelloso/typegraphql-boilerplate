@@ -4,12 +4,13 @@ import { InjectRepository } from 'typeorm-typedi-extensions';
 
 import { Repository } from 'typeorm';
 
-import { CreateUserInput, LoginInput } from './user-input';
+import { CreateUserInput, LoginInput, SearchInput } from './user-input';
 
 import AuthService from '~/auth/auth-service';
 import { User } from '~/entity/User';
 import { LoginPayload } from '~/auth/auth-payload';
 import { AuthContext } from '~/auth/auth-context';
+import { AllUsersPayload } from './user-payload';
 
 @Service()
 @Resolver(of => User)
@@ -20,9 +21,20 @@ export class UserResolver {
   ) {}
 
   @Authorized()
-  @Query(returns => [User])
-  async allUsers(): Promise<User[] | undefined> {
-    return this.userRepository.find();
+  @Query(returns => AllUsersPayload)
+  async allUsers(
+    @Arg('input')
+    input: SearchInput,
+  ): Promise<AllUsersPayload | undefined> {
+    const [users, count] = await this.userRepository
+      .createQueryBuilder()
+      .offset(input.offset)
+      .limit(input.limit)
+      .getManyAndCount();
+    return {
+      edges: users,
+      totalCount: count,
+    };
   }
 
   @Authorized()

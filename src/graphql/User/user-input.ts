@@ -1,4 +1,4 @@
-import { InputType, Field } from 'type-graphql';
+import { InputType, Field, Int } from 'type-graphql';
 import { User } from '~/entity/User';
 import { IsEmail } from 'class-validator';
 
@@ -28,4 +28,13 @@ export class LoginInput {
 
   @Field()
   password: string;
+}
+
+@InputType()
+export class SearchInput {
+  @Field(type => Int, { nullable: true, defaultValue: 0 })
+  offset?: number;
+
+  @Field(type => Int, { nullable: true, defaultValue: 10 })
+  limit?: number;
 }

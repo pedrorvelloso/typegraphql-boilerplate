@@ -45,7 +45,6 @@ class App {
   }
 
   private async apolloServer(): Promise<ApolloServer> {
-    console.log(this.configService.get('NODE_ENV'));
     const schema = await buildSchema({
       resolvers: [
         path.resolve(__dirname, 'graphql', '**', '*-resolver.{js,ts}'),

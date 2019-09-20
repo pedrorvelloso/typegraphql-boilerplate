@@ -14,7 +14,6 @@ import { GraphQLError } from 'graphql';
 @Resolver(of => User)
 export class UserResolver {
   constructor(
-    // @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly userRepository: UserRepository,
     private readonly authService: AuthService,
   ) {}

@@ -1,6 +1,6 @@
 import { InputType, Field, Int } from 'type-graphql';
 import { User } from '~/entity/User';
-import { IsEmail } from 'class-validator';
+import { IsEmail, Min, IsAlphanumeric, Max } from 'class-validator';
 
 @InputType()
 export class CreateUserInput implements Partial<User> {
@@ -8,6 +8,9 @@ export class CreateUserInput implements Partial<User> {
   password: string;
 
   @Field()
+  @IsAlphanumeric()
+  @Min(6)
+  @Max(32)
   username: string;
 
   @Field()
@@ -33,8 +36,12 @@ export class LoginInput {
 @InputType()
 export class SearchInput {
   @Field(type => Int, { nullable: true, defaultValue: 0 })
-  offset?: number;
+  @Min(1)
+  page: number;
 
   @Field(type => Int, { nullable: true, defaultValue: 10 })
-  limit?: number;
+  limit: number;
+
+  @Field({ nullable: true })
+  query?: string;
 }

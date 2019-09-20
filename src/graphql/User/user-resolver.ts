@@ -1,9 +1,5 @@
 import { Resolver, Query, Mutation, Arg, Ctx, Authorized } from 'type-graphql';
 import { Service } from 'typedi';
-import { InjectRepository } from 'typeorm-typedi-extensions';
-
-import { Repository } from 'typeorm';
-
 import { CreateUserInput, LoginInput, SearchInput } from './user-input';
 
 import AuthService from '~/auth/auth-service';
@@ -11,36 +7,39 @@ import { User } from '~/entity/User';
 import { LoginPayload } from '~/auth/auth-payload';
 import { AuthContext } from '~/auth/auth-context';
 import { AllUsersPayload } from './user-payload';
+import UserRepository from '~/repositories/user-repository';
+import { GraphQLError } from 'graphql';
 
 @Service()
 @Resolver(of => User)
 export class UserResolver {
   constructor(
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
+    // @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly userRepository: UserRepository,
     private readonly authService: AuthService,
   ) {}
 
   @Authorized()
   @Query(returns => AllUsersPayload)
   async allUsers(
-    @Arg('input')
+    @Arg('input', { nullable: true })
     input: SearchInput,
   ): Promise<AllUsersPayload | undefined> {
-    const [users, count] = await this.userRepository
-      .createQueryBuilder()
-      .offset(input.offset)
-      .limit(input.limit)
-      .getManyAndCount();
+    const { users, totalCount } = await this.userRepository.paginateAndSearch(
+      input.page,
+      input.limit,
+      input.query,
+    );
     return {
       edges: users,
-      totalCount: count,
+      totalCount,
     };
   }
 
   @Authorized()
   @Query(returns => User)
   async me(@Ctx() { user }: AuthContext) {
-    return this.userRepository.findOneOrFail({ id: user.id });
+    return this.userRepository.repository.findOneOrFail({ id: user.id });
   }
 
   @Mutation(returns => LoginPayload)
@@ -52,7 +51,16 @@ export class UserResolver {
   async createUser(
     @Arg('input') createUserData: CreateUserInput,
   ): Promise<User> {
-    const user = this.userRepository.create(createUserData);
-    return this.userRepository.save(user);
+    /**
+     * @todo move to repository
+     */
+    const userAlreadyExists = await this.userRepository.repository.findOne({
+      email: createUserData.email,
+    });
+
+    if (!!userAlreadyExists) throw new GraphQLError('User already exists!');
+
+    const user = this.userRepository.repository.create(createUserData);
+    return this.userRepository.repository.save(user);
   }
 }

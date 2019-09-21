@@ -50,16 +50,6 @@ export class UserResolver {
   async createUser(
     @Arg('input') createUserData: CreateUserInput,
   ): Promise<User> {
-    /**
-     * @todo move to repository
-     */
-    const userAlreadyExists = await this.userRepository.repository.findOne({
-      email: createUserData.email,
-    });
-
-    if (!!userAlreadyExists) throw new GraphQLError('User already exists!');
-
-    const user = this.userRepository.repository.create(createUserData);
-    return this.userRepository.repository.save(user);
+    return this.userRepository.create(createUserData);
   }
 }

@@ -1,6 +1,6 @@
-import { Resolver, Query, Mutation, Arg, Ctx, Authorized } from 'type-graphql';
+import { Resolver, Query, Mutation, Arg, Ctx, Authorized, Args } from 'type-graphql';
 import { Service } from 'typedi';
-import { CreateUserInput, LoginInput, SearchInput } from './user-input';
+import { CreateUserInput, LoginInput } from './user-input';
 
 import AuthService from '~/auth/auth-service';
 import { User } from '~/entity/User';
@@ -8,7 +8,7 @@ import { LoginPayload } from '~/auth/auth-payload';
 import { AuthContext } from '~/auth/auth-context';
 import { AllUsersPayload } from './user-payload';
 import UserRepository from '~/repositories/user-repository';
-import { GraphQLError } from 'graphql';
+import { SearchInput } from '../common/search-input';
 
 @Service()
 @Resolver(of => User)
@@ -27,7 +27,7 @@ export class UserResolver {
     const { users, totalCount } = await this.userRepository.paginateAndSearch(
       input.page,
       input.limit,
-      input.query,
+      input.query || '',
     );
     return {
       edges: users,
@@ -42,7 +42,7 @@ export class UserResolver {
   }
 
   @Mutation(returns => LoginPayload)
-  async login(@Arg('input') loginData: LoginInput): Promise<LoginPayload> {
+  async login(@Args() loginData: LoginInput): Promise<LoginPayload> {
     return this.authService.authenticate(loginData.email, loginData.password);
   }
 

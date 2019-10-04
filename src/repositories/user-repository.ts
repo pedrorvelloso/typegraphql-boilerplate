@@ -24,11 +24,11 @@ export default class UserRepository {
       .limit(limit);
 
     queryBuilder.where('user.username LIKE :query', {
-      query: `%${query || ''}%`,
+      query: `%${query}%`,
     });
 
     queryBuilder.orWhere('user.email LIKE :query', {
-      query: `%${query || ''}%`,
+      query: `%${query}%`,
     });
 
     const [users, totalCount] = await queryBuilder.getManyAndCount();
